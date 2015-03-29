@@ -76,56 +76,73 @@
     }
 
     //View
+    function SalaryCalculatorView(calculator){
+
+        var $root = this.$root = $("<div class='content'></div>");
+
+        this.init = function(){
+            //UI events
+            $root.on("change", "#txtBasic", function(){
+                calculator.set('basic', this.value.toInt());
+            });
+
+            $root.on("change", "#txtHra", function(){
+                calculator.set('hra', this.value.toInt());
+            });
+            $root.on("change", "#txtDa", function(){
+                calculator.set('da', this.value.toInt());
+            });
+            $root.on("change", "#rangeTax", function(){
+                calculator.set('tax', this.value.toInt());
+            });
+            $root.on("click", "#btnCalculate", function(){
+                calculator.calculate();
+            });
+
+
+
+            //Model Events
+            calculator.addListener('salary', function(){
+                $("#divResult", $root).html(calculator.get('salary'));
+            });
+
+            calculator.addListener('basic', function(){
+                $("#txtBasic", $root).val(calculator.get('basic'));
+            });
+            calculator.addListener('hra', function(){
+                $("#txtHra", $root).val(calculator.get('hra'));
+            });
+            calculator.addListener('da', function(){
+                $("#txtDa", $root).val(calculator.get('da'));
+            });
+            calculator.addListener('tax', function(){
+                var tax = calculator.get('tax');
+                $("#rangeTax", $root).val(tax);
+                $("#spanTax", $root).html(tax);
+            });
+        }
+
+        this.render = function(){
+            $root.html($("#calculatorTemplate").html());
+            return this;
+        }
+    };
+
     $(function(){
         window.calculator = new SalaryCalculator();
 
-        //UI events
-        $("#txtBasic").change(function(){
-            calculator.set('basic', this.value.toInt());
-        });
+        var view1 = new SalaryCalculatorView(calculator);
+        view1.init();
+        view1.render().$root.appendTo(document.body);
 
-        $("#txtHra").change(function(){
-            calculator.set('hra', this.value.toInt());
-        });
-        $("#txtDa").change(function(){
-            calculator.set('da', this.value.toInt());
-        });
-        $("#rangeTax").change(function(){
-            calculator.set('tax', this.value.toInt());
-        });
-        $("#btnCalculate").click(function(){
-            calculator.calculate();
-        });
-
-
-
-        //Model Events
-        calculator.addListener('salary', function(){
-            $("#divResult").html(calculator.get('salary'));
-        });
-
-        calculator.addListener('basic', function(){
-            $("#txtBasic").val(calculator.get('basic'));
-        });
-        calculator.addListener('hra', function(){
-            $("#txtHra").val(calculator.get('hra'));
-        });
-        calculator.addListener('da', function(){
-            $("#txtDa").val(calculator.get('da'));
-        });
-        calculator.addListener('tax', function(){
-            var tax = calculator.get('tax');
-            $("#rangeTax").val(tax);
-            $("#spanTax").html(tax);
-        });
+        var view2 = new SalaryCalculatorView(calculator);
+        view2.init();
+        view2.render().$root.appendTo(document.body);
     });
     </script>
-</head>
-<body>
-    <h1>Salary Calculator</h1>
     
-    <div class="content">
-       <form id="calculatorForm">
+    <script type="text/template" id="calculatorTemplate">
+       <form id="calculatorForm1">
         <div><label for="">Basic :</label><input type="text" name="basic" id="txtBasic"></div>
         <div><label for="">HRA :</label><input type="text" name="hra" id="txtHra"></div>
         <div><label for="">DA :</label><input type="text" name="da" id="txtDa"></div>
@@ -139,7 +156,13 @@
             <div id="divResult">[Salary]</div>
         </div>
         </form>
-    </div>
+    </script>
+</head>
+<body>
+    <h1>Salary Calculator</h1>
+
+
+
 
 </body>
 </html>
