@@ -13,6 +13,11 @@
         li{
             cursor: pointer;
         }
+        .timeStamp  {
+            font-size: small;
+            font-style: italic;
+            font-weight: bold;
+        }
     </style>
     <script >
         /*
@@ -30,18 +35,78 @@
 
         */
     </script>
+    <script src="angular.js"></script>
+    <script src="moment.js"></script>
+    <script>
+        
+        
+        var bugTrackerApp = angular.module("bugTrackerApp",[]);
+        
+        bugTrackerApp.factory("Bug", function(){
+            function Bug(data){
+                this.title = data.title;
+                this.isClosed = data.isClosed;
+                this.createdAt = data.createdAt;
+            }
+            Bug.prototype.toggleStatus = function(){
+                this.isClosed = !this.isClosed;
+            }
+            return Bug;
+        });
+        
+        bugTrackerApp.controller("bugsController", function($scope, Bug){
+            //placeholder for new bug
+            $scope.newBug = "";
+            
+            //adding newbug to the list
+            $scope.addNewBug = function(){
+                var newBugObj = new Bug({
+                    title : $scope.newBug,
+                    isClosed : false,
+                    createdAt : new Date()
+                });
+                $scope.bugs.push(newBugObj);
+                $scope.newBug = "";
+            };
+            
+            //initial list
+            $scope.bugs = [
+                new Bug({ title : "Unable to login", isClosed : false, createdAt : new Date("29-Mar-2015 9:00:00")}),
+                new Bug({ title : "Server communcation failure", isClosed : false, createdAt : new Date("29-Mar-2015 15:00:00")}),
+                new Bug({ title : "Data Loss", isClosed : false, createdAt : new Date("29-Mar-2015 11:00:00")})
+            ];
+            
+            $scope.toggleStatus = function(bug){
+                bug.toggleStatus();
+            };
+        });
+        
+        bugTrackerApp.filter("toMoment", function(){
+            return function(data){
+                return moment(data).fromNow();
+            }
+        });
+    </script>
 </head>
-<body>
+<body ng-app="bugTrackerApp">
+    
     <h1>Bug Tracker</h1>
-    <div class="content">
+    <div class="content" ng-controller="bugsController">
+        <div class="stats">
+            <span class="closed">{{(bugs | filter:{isClosed : true}).length}}</span>
+            <span> / </span>
+            <span>{{bugs.length}}</span>
+        </div>
         <span>Bug :</span>
-        <input type="text" name="" id="txtBugTitle">
-        <input type="button" value="Add Bug">
+        <input type="text" name="" id="txtBugTitle" ng-model="newBug">
+        <input type="button" value="Add Bug" ng-click="addNewBug(newBug)">
         <input type="button" value="Remove Closed">
         <ol>
-            <li>Unable to login</li>
-            <li class="closed">Server communication fails</li>
-            <li>Data lost</li>
+            <li ng-repeat="bug in bugs" ng-click="toggleStatus(bug)" ng-class="{closed : bug.isClosed}">
+            <span>{{bug.title}}</span>
+            <span> - </span>
+            <span class="timeStamp">{{bug.createdAt | toMoment}}</span>
+            </li>
         </ol>
     </div>
 </body>
