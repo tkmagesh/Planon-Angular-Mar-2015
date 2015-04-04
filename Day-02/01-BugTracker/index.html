@@ -67,7 +67,36 @@
 
         var bugTrackerApp = angular.module("bugTrackerApp",["utils"]);
 
+        bugTrackerApp.provider("calculatorService", function(){
+            //return the object that will be inject in the .config()
+            var calculatorAction = '';
+            return {
+                setCalculatorAction : function(action){
+                    calculatorAction = action;
+                },
+                $get : function(){
+                    //return what you want to inject as service in other service/factory/controller etc
+                    var result = {};
+                    if (calculatorAction === "add"){
+                        result.process = function(x,y){
+                            return x + y;
+                        }
+                    } else {
+                        result.process = function(x,y){
+                            return x - y;
+                        }
+                    }
+                    return result;
+                }
+            }
+        })
+        bugTrackerApp.config(function(calculatorServiceProvider){
+
+            calculatorServiceProvider.setCalculatorAction("subtract");
+        })
+
         bugTrackerApp.factory("Bug", function(){
+            console.log("factory - Bug");
             function Bug(data){
                 this.id = data.id || new Date().valueOf().toString();
                 this.title = data.title;
@@ -81,7 +110,7 @@
         });
 
         bugTrackerApp.service("bugStorage", function(Bug, $window){
-
+            console.log("service - bugStorage");
             var storage = $window.localStorage;
 
             this.getAll = function(){
@@ -128,7 +157,7 @@
         });*/
 
         bugTrackerApp.service("bugService", function($http, Bug, $q){
-
+            console.log("service - bugService");
             this.getAll = function(){
                 //var defered = $q.defer();
                 return $http.get("http://localhost:3000/bugs")
@@ -143,7 +172,9 @@
             }
         });
 
-        bugTrackerApp.controller("bugsController", function($scope, Bug, bugStorage, bugService){
+        bugTrackerApp.controller("bugsController", function($scope, Bug, bugStorage, bugService, calculatorService){
+            console.log("controller -  bugsController");
+            console.log(calculatorService.process(100,200));
             //placeholder for new bug
             var storage = window.localStorage;
 
@@ -193,12 +224,15 @@
         bugTrackerApp.value("momentApi", moment);
 
         bugTrackerApp.filter("toMoment", function(momentApi){
+            console.log("filter - toMoment");
             return function(data){
                 return momentApi(data).fromNow();
             }
         });
 
-
+        bugTrackerApp.run(function(){
+            console.log("run section");
+        })
     </script>
 </head>
 <body ng-app="bugTrackerApp">
