@@ -68,21 +68,62 @@
             return Bug;
         });
 
-        bugTrackerApp.controller("bugsController", function($scope, Bug){
+        /*bugTrackerApp.service("bugStorage", function(Bug){
+
+            var storage = window.localStorage;
+
+            this.getAll = function(){
+                var result = [];
+                for(var i=0; i< storage.length;i++){
+                //load data from storage
+                    var bugString = storage.getItem(storage.key(i));
+                    var bugData = window.JSON.parse(bugString);
+                    var bug = new Bug(bugData);
+                    result.push(bug);
+                }
+                return result;
+            };
+            this.save = function(bug){
+                storage.setItem(bug.id, window.JSON.stringify(bug));
+            };
+            this.remove = function(bugId){
+                storage.removeItem(bugId);
+            }
+        });*/
+
+         bugTrackerApp.factory("bugStorage", function(Bug){
+
+            var storage = window.localStorage;
+            var obj = {};
+            obj.getAll = function(){
+                var result = [];
+                for(var i=0; i< storage.length;i++){
+                //load data from storage
+                    var bugString = storage.getItem(storage.key(i));
+                    var bugData = window.JSON.parse(bugString);
+                    var bug = new Bug(bugData);
+                    result.push(bug);
+                }
+                return result;
+            };
+            obj.save = function(bug){
+                storage.setItem(bug.id, window.JSON.stringify(bug));
+            };
+            obj.remove = function(bugId){
+                storage.removeItem(bugId);
+            }
+            return obj;
+        });
+
+        bugTrackerApp.controller("bugsController", function($scope, Bug, bugStorage){
             //placeholder for new bug
             var storage = window.localStorage;
 
             //initial list
-            $scope.bugs = [];
+            $scope.bugs = bugStorage.getAll();
 
             //load the data from storage
-            for(var i=0; i< storage.length;i++){
-                //load data from storage
-                var bugString = storage.getItem(storage.key(i));
-                var bugData = window.JSON.parse(bugString);
-                var bug = new Bug(bugData);
-                $scope.bugs.push(bug);
-            }
+
 
             $scope.newBug = "";
 
@@ -93,7 +134,7 @@
                     isClosed : false,
                     createdAt : new Date()
                 });
-                storage.setItem(newBugObj.id, window.JSON.stringify(newBugObj));
+                bugStorage.save(newBugObj);
                 $scope.bugs.push(newBugObj);
                 $scope.newBug = "";
             };
@@ -102,14 +143,14 @@
 
             $scope.toggleStatus = function(bug){
                 bug.toggleStatus();
-                storage.setItem(bug.id, window.JSON.stringify(bug));
+                bugStorage.save(bug);
             };
 
             $scope.removeClosed = function(){
                 for (var i= $scope.bugs.length-1; i>=0; i--){
                     var bug = $scope.bugs[i];
                     if (bug.isClosed){
-                        storage.removeItem(bug.id);
+                        bugStorage.remove(bug.id);
                         $scope.bugs.splice(i,1);
                     }
                 }
