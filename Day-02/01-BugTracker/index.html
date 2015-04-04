@@ -127,15 +127,21 @@
             return obj;
         });*/
 
-        bugTrackerApp.controller("bugsController", function($scope, Bug, bugStorage){
+        bugTrackerApp.controller("bugsController", function($scope, Bug, bugStorage, $http){
             //placeholder for new bug
             var storage = window.localStorage;
 
             //initial list
-            $scope.bugs = bugStorage.getAll();
+            //$scope.bugs = bugStorage.getAll();
 
             //load the data from storage
 
+            //load the data from server
+            var promise = $http.get("http://localhost:3000/bugs");
+            promise.then(function(response){
+                var bugs = response.data;
+                $scope.bugs = bugs;
+            });
 
             $scope.newBug = "";
 
