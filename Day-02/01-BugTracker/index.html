@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bug Tracker</title>
+    <style>
+        .closed{
+            color : red;
+            text-decoration: line-through;
+            font-weight: bold;
+            font-style: italic;
+        }
+        li{
+            cursor: pointer;
+        }
+        .timeStamp  {
+            font-size: small;
+            font-style: italic;
+            font-weight: bold;
+        }
+    </style>
+    <script >
+        /*
+        1. Display a list of bugs
+        2. Add a new Bug
+        3. Toggle the closed status of a bug
+        4. Remove closed bugs
+        4.a Display stats
+        7. Display the time of creation
+        5. Persist bugs in the localStorage
+        6. Persist bugs in the server
+        8. Search for bugs
+        9. Sort the bugs by various attributes
+        10. Categorize the bugs
+
+        */
+
+        /*
+        window.localStorage
+            key/value store
+            both key and value should be strings
+
+            - setItem(key,value)
+            - getItem(key) //=> value
+            - removeItem(key)
+            - key(index) //=> key
+            - clear()
+            - length
+        */
+    </script>
+    <script src="angular.js"></script>
+    <script src="moment.js"></script>
+    <script>
+
+
+        var bugTrackerApp = angular.module("bugTrackerApp",[]);
+
+        bugTrackerApp.factory("Bug", function(){
+            function Bug(data){
+                this.id = data.id || new Date().valueOf().toString();
+                this.title = data.title;
+                this.isClosed = data.isClosed;
+                this.createdAt = data.createdAt;
+            }
+            Bug.prototype.toggleStatus = function(){
+                this.isClosed = !this.isClosed;
+            }
+            return Bug;
+        });
+
+        bugTrackerApp.controller("bugsController", function($scope, Bug){
+            //placeholder for new bug
+            var storage = window.localStorage;
+
+            //initial list
+            $scope.bugs = [];
+
+            //load the data from storage
+            for(var i=0; i< storage.length;i++){
+                //load data from storage
+                var bugString = storage.getItem(storage.key(i));
+                var bugData = window.JSON.parse(bugString);
+                var bug = new Bug(bugData);
+                $scope.bugs.push(bug);
+            }
+
+            $scope.newBug = "";
+
+            //adding newbug to the list
+            $scope.addNewBug = function(){
+                var newBugObj = new Bug({
+                    title : $scope.newBug,
+                    isClosed : false,
+                    createdAt : new Date()
+                });
+                storage.setItem(newBugObj.id, window.JSON.stringify(newBugObj));
+                $scope.bugs.push(newBugObj);
+                $scope.newBug = "";
+            };
+
+
+
+            $scope.toggleStatus = function(bug){
+                bug.toggleStatus();
+                storage.setItem(bug.id, window.JSON.stringify(bug));
+            };
+
+            $scope.removeClosed = function(){
+                for (var i= $scope.bugs.length-1; i>=0; i--){
+                    var bug = $scope.bugs[i];
+                    if (bug.isClosed){
+                        storage.removeItem(bug.id);
+                        $scope.bugs.splice(i,1);
+                    }
+                }
+            }
+        });
+
+        bugTrackerApp.filter("toMoment", function(){
+            return function(data){
+                return moment(data).fromNow();
+            }
+        });
+    </script>
+</head>
+<body ng-app="bugTrackerApp">
+
+    <h1>Bug Tracker</h1>
+    <div class="content" ng-controller="bugsController">
+        <div class="stats">
+            <span class="closed">{{(bugs | filter:{isClosed : true}).length}}</span>
+            <span> / </span>
+            <span>{{bugs.length}}</span>
+        </div>
+        <span>Bug :</span>
+        <input type="text" name="" id="txtBugTitle" ng-model="newBug">
+        <input type="button" value="Add Bug" ng-click="addNewBug(newBug)">
+        <input type="button" value="Remove Closed" ng-click="removeClosed()" >
+        <ol>
+            <li ng-repeat="bug in bugs" ng-click="toggleStatus(bug)" ng-class="{closed : bug.isClosed}">
+            <span>{{bug.title}}</span>
+            <span> - </span>
+            <span class="timeStamp">{{bug.createdAt | toMoment}}</span>
+            </li>
+        </ol>
+    </div>
+</body>
+</html>
