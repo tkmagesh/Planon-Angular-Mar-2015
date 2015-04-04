@@ -66,34 +66,24 @@
 
 
         var bugTrackerApp = angular.module("bugTrackerApp",["utils"]);
-
-        bugTrackerApp.provider("calculatorService", function(){
+        bugTrackerApp.constant("momentApi", moment);
+        bugTrackerApp.provider("momentService", function(momentApi){
             //return the object that will be inject in the .config()
-            var calculatorAction = '';
+            var momentLocale = ''
             return {
-                setCalculatorAction : function(action){
-                    calculatorAction = action;
+                setMomentLocale : function(locale){
+                    momentLocale = locale;
                 },
                 $get : function(){
-                    //return what you want to inject as service in other service/factory/controller etc
-                    var result = {};
-                    if (calculatorAction === "add"){
-                        result.process = function(x,y){
-                            return x + y;
-                        }
-                    } else {
-                        result.process = function(x,y){
-                            return x - y;
-                        }
+                    return function(data){
+                        return momentApi(data).format(momentLocale);
                     }
-                    return result;
                 }
             }
-        })
-        bugTrackerApp.config(function(calculatorServiceProvider){
-
-            calculatorServiceProvider.setCalculatorAction("subtract");
-        })
+        });
+        bugTrackerApp.config(function(momentServiceProvider){
+            momentServiceProvider.setMomentLocale('LLL');
+        });
 
         bugTrackerApp.factory("Bug", function(){
             console.log("factory - Bug");
@@ -172,9 +162,9 @@
             }
         });
 
-        bugTrackerApp.controller("bugsController", function($scope, Bug, bugStorage, bugService, calculatorService){
+        bugTrackerApp.controller("bugsController", function($scope, Bug, bugStorage, bugService){
             console.log("controller -  bugsController");
-            console.log(calculatorService.process(100,200));
+            //console.log(calculatorService.process(100,200));
             //placeholder for new bug
             var storage = window.localStorage;
 
@@ -221,13 +211,14 @@
             }
         });
 
-        bugTrackerApp.value("momentApi", moment);
+       // bugTrackerApp.value("momentApi", moment);
 
-        bugTrackerApp.filter("toMoment", function(momentApi){
+        bugTrackerApp.filter("toMoment", function(momentService){
             console.log("filter - toMoment");
             return function(data){
-                return momentApi(data).fromNow();
-            }
+                //return momentApi(data).fromNow();
+                return momentService(data);
+            };
         });
 
         bugTrackerApp.run(function(){
