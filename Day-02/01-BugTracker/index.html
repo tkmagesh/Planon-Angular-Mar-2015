@@ -127,7 +127,23 @@
             return obj;
         });*/
 
-        bugTrackerApp.controller("bugsController", function($scope, Bug, bugStorage, $http){
+        bugTrackerApp.service("bugService", function($http, Bug, $q){
+
+            this.getAll = function(){
+                //var defered = $q.defer();
+                return $http.get("http://localhost:3000/bugs")
+                    .then(function(response){
+                        var result = response.data.map(function(d){
+                            return new Bug(d);
+                        });
+                        return result;
+                        //defered.resolve(result);
+                    });
+                //return defered.promise;
+            }
+        });
+
+        bugTrackerApp.controller("bugsController", function($scope, Bug, bugStorage, bugService){
             //placeholder for new bug
             var storage = window.localStorage;
 
@@ -137,11 +153,10 @@
             //load the data from storage
 
             //load the data from server
-            var promise = $http.get("http://localhost:3000/bugs");
-            promise.then(function(response){
-                var bugs = response.data;
+            bugService.getAll().then(function(bugs){
                 $scope.bugs = bugs;
             });
+
 
             $scope.newBug = "";
 
