@@ -51,9 +51,21 @@
     <script src="angular.js"></script>
     <script src="moment.js"></script>
     <script>
+        var utils = angular.module("utils",[]);
+        utils.value("defaultTextLimit",20);
+        utils.filter("trimText", function(defaultTextLimit, $filter){
+            return function(data, textLimit){
+                var limitTo = $filter('limitTo');
+                textLimit = textLimit || defaultTextLimit;
+                return data.length > textLimit
+                    ? limitTo(data,textLimit) + "..."
+                    : data;
+            }
+        });
 
 
-        var bugTrackerApp = angular.module("bugTrackerApp",[]);
+
+        var bugTrackerApp = angular.module("bugTrackerApp",["utils"]);
 
         bugTrackerApp.factory("Bug", function(){
             function Bug(data){
@@ -68,30 +80,30 @@
             return Bug;
         });
 
-        /*bugTrackerApp.service("bugStorage", function(Bug){
+        bugTrackerApp.service("bugStorage", function(Bug, $window){
 
-            var storage = window.localStorage;
+            var storage = $window.localStorage;
 
             this.getAll = function(){
                 var result = [];
                 for(var i=0; i< storage.length;i++){
                 //load data from storage
                     var bugString = storage.getItem(storage.key(i));
-                    var bugData = window.JSON.parse(bugString);
+                    var bugData = angular.fromJson(bugString);
                     var bug = new Bug(bugData);
                     result.push(bug);
                 }
                 return result;
             };
             this.save = function(bug){
-                storage.setItem(bug.id, window.JSON.stringify(bug));
+                storage.setItem(bug.id, angular.toJson(bug));
             };
             this.remove = function(bugId){
                 storage.removeItem(bugId);
             }
-        });*/
+        });
 
-         bugTrackerApp.factory("bugStorage", function(Bug){
+        /* bugTrackerApp.factory("bugStorage", function(Bug){
 
             var storage = window.localStorage;
             var obj = {};
@@ -113,7 +125,7 @@
                 storage.removeItem(bugId);
             }
             return obj;
-        });
+        });*/
 
         bugTrackerApp.controller("bugsController", function($scope, Bug, bugStorage){
             //placeholder for new bug
@@ -157,17 +169,25 @@
             }
         });
 
-        bugTrackerApp.filter("toMoment", function(){
+        bugTrackerApp.value("momentApi", moment);
+
+        bugTrackerApp.filter("toMoment", function(momentApi){
             return function(data){
-                return moment(data).fromNow();
+                return momentApi(data).fromNow();
             }
         });
+
+
     </script>
 </head>
 <body ng-app="bugTrackerApp">
 
     <h1>Bug Tracker</h1>
     <div class="content" ng-controller="bugsController">
+       <div>
+           <span>Bug Title Limit : </span>
+           <input type="range" min="20" max="200" ng-model="bugTitleLimit">
+       </div>
         <div class="stats">
             <span class="closed">{{(bugs | filter:{isClosed : true}).length}}</span>
             <span> / </span>
@@ -179,7 +199,7 @@
         <input type="button" value="Remove Closed" ng-click="removeClosed()" >
         <ol>
             <li ng-repeat="bug in bugs" ng-click="toggleStatus(bug)" ng-class="{closed : bug.isClosed}">
-            <span>{{bug.title}}</span>
+            <span>{{bug.title | trimText:bugTitleLimit }}</span>
             <span> - </span>
             <span class="timeStamp">{{bug.createdAt | toMoment}}</span>
             </li>
