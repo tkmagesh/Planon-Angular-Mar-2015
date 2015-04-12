@@ -81,8 +81,9 @@
                 }
             }
         });
-        bugTrackerApp.config(function(momentServiceProvider){
+        bugTrackerApp.config(function(momentServiceProvider, bugStorageProvider){
             momentServiceProvider.setMomentLocale('LLL');
+            bugStorageProvider.setStorageOption("sessionStorage");
         });
 
         bugTrackerApp.factory("Bug", function(){
@@ -99,28 +100,43 @@
             return Bug;
         });
 
-        bugTrackerApp.service("bugStorage", function(Bug, $window){
-            console.log("service - bugStorage");
-            var storage = $window.localStorage;
+        bugTrackerApp.provider("bugStorage", function(){
+            var _storageOption = '';
+            return {
+                setStorageOption : function(storageOption){
+                    _storageOption = storageOption;
+                },
+                $get :  function(Bug, $window){
 
-            this.getAll = function(){
-                var result = [];
-                for(var i=0; i< storage.length;i++){
-                //load data from storage
-                    var bugString = storage.getItem(storage.key(i));
-                    var bugData = angular.fromJson(bugString);
-                    var bug = new Bug(bugData);
-                    result.push(bug);
+                    var storage = $window[_storageOption];
+                    return {
+                        getAll : function(){
+                            var result = [];
+                            for(var i=0; i< storage.length;i++){
+                            //load data from storage
+                                var bugString = storage.getItem(storage.key(i));
+                                var bugData = angular.fromJson(bugString);
+                                var bug = new Bug(bugData);
+                                result.push(bug);
+                            }
+                            return result;
+                        },
+                        save : function(bug){
+                            storage.setItem(bug.id, angular.toJson(bug));
+                        },
+                        remove : function(bugId){
+                            storage.removeItem(bugId);
+                        },
+                        printStorage : function(){
+                            console.log(_storageOption);
+                        }
+                    }
                 }
-                return result;
-            };
-            this.save = function(bug){
-                storage.setItem(bug.id, angular.toJson(bug));
-            };
-            this.remove = function(bugId){
-                storage.removeItem(bugId);
-            }
+        }
         });
+
+
+
 
         /* bugTrackerApp.factory("bugStorage", function(Bug){
 
@@ -166,17 +182,18 @@
             console.log("controller -  bugsController");
             //console.log(calculatorService.process(100,200));
             //placeholder for new bug
-            var storage = window.localStorage;
+            //var storage = window.localStorage;
 
             //initial list
-            //$scope.bugs = bugStorage.getAll();
+            bugStorage.printStorage();
+            $scope.bugs = bugStorage.getAll();
 
             //load the data from storage
 
             //load the data from server
-            bugService.getAll().then(function(bugs){
+            /*bugService.getAll().then(function(bugs){
                 $scope.bugs = bugs;
-            });
+            });*/
 
 
             $scope.newBug = "";
