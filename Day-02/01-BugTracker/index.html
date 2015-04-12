@@ -262,7 +262,7 @@
         <input type="button" value="Remove Closed" ng-click="removeClosed()" >
         <ol>
             <li ng-repeat="bug in bugs" ng-click="toggleStatus(bug)" ng-class="{closed : bug.isClosed}">
-            <span>{{bug.title | trimText:bugTitleLimit }}</span>
+            <span>{{bug.title | xyz }}</span>
             <span> - </span>
             <span class="timeStamp">{{bug.createdAt | toMoment}}</span>
             </li>
