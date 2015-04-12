@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scope Inheritance</title>
+    <style>
+    div {
+        border : 2px solid;
+        padding: 10px;
+        margin: 10px;
+    }
+    .root{
+        border-color: black;
+        background-color: lightgray;
+    }
+        .first{
+            border-color: red;
+            background-color: lightpink;
+        }
+        .second{
+            border-color: blue;
+            background-color: lightblue;
+        }
+        span{
+            display : block;
+        }
+    </style>
+    <script src="angular.js"></script>
+    <script>
+    angular
+        .module("myApp",[])
+        .run(function($rootScope){
+            $rootScope.data = {
+                name : "Magesh"
+            };
+        })
+        .controller("testController", function($scope){
+
+        })
+
+    </script>
+</head>
+<body ng-app="myApp">
+    <div class="root">
+        <input type="text" ng-model="data.name">
+        <span>{{data.name}}</span>
+        <div class="first"  ng-controller="testController">
+            <input type="text" ng-model="data.name">
+            <span>{{data.name}}</span>
+        </div>
+        <div class="second" ng-controller="testController">
+            <input type="text" ng-model="data.name">
+            <span>{{data.name}}</span>
+        </div>
+    </div>
+</body>
+</html>
