@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Custom Directives</title>
+    <script src="jquery-1.11.2.js"></script>
+    <script src="angular.js"></script>
+    <style>
+    .something{
+        border : 2px solid black;
+        padding : 5px;
+    }
+    </style>
+    <script>
+    angular
+        .module("myApp",[])
+        .run(function($rootScope){
+            $rootScope.message = "This is from the rootscope";
+        })
+        .controller('firstController', function($scope){
+            $scope.parentMessage = 'This is from the controller';
+            $scope.onDirectiveClick = function(){
+                console.log('some directive clicked');
+            };
+        })
+        .directive("hideOnClick",function(){
+            return {
+                restrict : 'EA',
+                templateUrl : 'hideOnClickTemplate.html',
+                scope : {
+                     message : '@',
+                     click : '&'
+                },
+                transclude : true,
+                /*controller : function($scope){
+                    //$scope.message = "from inside the directive";
+                },*/
+                link : function($scope, $elem, attrs){
+                    $elem.click(function(){
+                        $(this).html($scope.message);
+                        $scope.click();
+                    });
+                }
+            }
+
+        });
+    </script>
+</head>
+<body ng-app="myApp" ng-controller='firstController'>
+   <bugs data="bugs"></bugs>
+    <hide-on-click
+        message='{{parentMessage}}'
+        click='onDirectiveClick()'
+        >
+
+        </hide-on-click>
+</body>
+</html>

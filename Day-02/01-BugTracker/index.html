@@ -213,7 +213,8 @@
 
 
             $scope.toggleStatus = function(bug){
-                bug.toggleStatus();
+                console.log('toggleStatus from controller scope');
+                //bug.toggleStatus();
                 bugStorage.save(bug);
             };
 
@@ -240,6 +241,23 @@
 
         bugTrackerApp.run(function(){
             console.log("run section");
+        });
+
+        bugTrackerApp.directive("bugs", function(){
+            return {
+                template : "<ol><li ng-repeat='bug in data' ng-click='onBugClick(bug)' ng-class='{closed : bug.isClosed}'>{{bug.title}}</li></ol>",
+                restrict :  "E",
+                scope : {
+                    data : '=',
+                    click : '&'
+                },
+                controller : function($scope){
+                    $scope.onBugClick = function(bug){
+                        bug.toggleStatus();
+                        $scope.click(bug);
+                    }
+                }
+            }
         })
     </script>
 </head>
@@ -260,13 +278,14 @@
         <input type="text" name="" id="txtBugTitle" ng-model="newBug">
         <input type="button" value="Add Bug" ng-click="addNewBug(newBug)">
         <input type="button" value="Remove Closed" ng-click="removeClosed()" >
-        <ol>
+        <!--<ol>
             <li ng-repeat="bug in bugs" ng-click="toggleStatus(bug)" ng-class="{closed : bug.isClosed}">
             <span>{{bug.title | xyz }}</span>
             <span> - </span>
             <span class="timeStamp">{{bug.createdAt | toMoment}}</span>
             </li>
-        </ol>
+        </ol>-->
+        <bugs data='bugs' click='toggleStatus(bug)'></bugs>
     </div>
 </body>
 </html>
