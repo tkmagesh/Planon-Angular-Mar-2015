@@ -16,7 +16,25 @@
                 })
                 .when("/products/:productId", {
                     templateUrl : "templates/productInfoTemplate.html",
-                    controller : "productInfoController"
+                    controller : "productInfoController",
+                    resolve : {
+                        authorizeInfo : function($q, $route, $location){
+                            console.log($route.current);
+                            var productId = parseInt($route.current.params.productId);
+                            console.log("productId = ", productId);
+                            var deferred = $q.defer();
+
+                            if(productId % 2 === 0){
+                                deferred.resolve({
+                                    userName : "Magesh"
+                                });
+                            } else {
+                                deferred.reject();
+                            }
+
+                            return deferred.promise;
+                        }
+                    }
                 })
                 .when("/customers", {
                     /*template : "<h1>Customers</h1>"*/
@@ -26,8 +44,16 @@
                     redirectTo : "/products"
                 });
         })
-    .controller("productInfoController", function($scope, $routeParams){
+    //.service("authorize", )
+    .run(function($rootScope, $location){
+        $rootScope.$on("$routeChangeError", function(){
+            console.log("route change error");
+            $location.url("products");
+        });
+    })
+    .controller("productInfoController", function($scope, $routeParams, authorizeInfo){
         console.log($routeParams);
+        $scope.userName = authorizeInfo.userName;
         $scope.message = "Product Info generated at " + new Date() + " for product -id : " + $routeParams.productId;
     });
 
