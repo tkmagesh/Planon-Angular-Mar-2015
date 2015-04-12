@@ -11,15 +11,25 @@
         .config(function($routeProvider){
             $routeProvider
                 .when("/products", {
-                    template : "<h1>Products</h1>"
+                    /*template : "<h1>Products</h1>"*/
+                    templateUrl : "templates/productsTemplate.html"
+                })
+                .when("/products/:productId", {
+                    templateUrl : "templates/productInfoTemplate.html",
+                    controller : "productInfoController"
                 })
                 .when("/customers", {
-                    template : "<h1>Customers</h1>"
+                    /*template : "<h1>Customers</h1>"*/
+                    templateUrl : "templates/customersTemplate.html"
                 })
                 .otherwise({
                     redirectTo : "/products"
                 });
-        });
+        })
+    .controller("productInfoController", function($scope, $routeParams){
+        console.log($routeParams);
+        $scope.message = "Product Info generated at " + new Date() + " for product -id : " + $routeParams.productId;
+    });
 
     </script>
 </head>
